@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.maliotis.batterystate">
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        tools:replace="android:icon,android:theme"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:hardwareAccelerated="false"
+        android:largeHeap="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".Activities.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name=".Activities.AlarmReceiverActivity"
+                  android:showOnLockScreen="true">
+
+        </activity>
+
+        <receiver android:name=".BroadcastReceivers.PluginCharge"
+                  android:label="PluginCharge">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"></action>
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

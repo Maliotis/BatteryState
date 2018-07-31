@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="buttonColor">#F2212121</color>
+    <color name="toolbarColor">#353270</color>
+    <color name="backgroundStartColor">#302D73</color>
+    <color name="backgroundEndColor">#341E50</color>
+    <color name="ringProgressViewStartColor">#00BEFF</color>
+    <color name="ringProgressViewEndColor">#00FAB5</color>
+</resources>

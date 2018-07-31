@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@drawable/background"
+    android:layout_height="match_parent"
+    tools:context=".Activities.AlarmReceiverActivity">
+
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="240dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="56dp"
+        android:background="@drawable/button_alarm"
+        android:text="Stop Alarm"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="322dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/layer_list_battery"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <com.gelitenight.waveview.library.WaveView
+        android:id="@+id/waveView"
+        android:layout_height="258dp"
+        android:layout_width="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="224dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"/>
+
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BatteryState</string>
+    <string name="nav_open">Open navigation drawer</string>
+</resources>
