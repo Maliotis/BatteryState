@@ -9,18 +9,15 @@
         android:title="Settings"/>
     <item
         android:id="@+id/nav_themes"
-        android:icon="@drawable/ic_baseline_brush_24px"
-        android:title="Themes"/>
+        android:icon="@drawable/ic_baseline_help_24px"
+        android:title="How to use"/>
 
     <item
         android:id="@+id/nav_info"
         android:icon="@drawable/ic_baseline_info_24px"
         android:title="About"/>
 
-    <item
-        android:id="@+id/nav_ads"
-        android:icon="@drawable/ic_baseline_remove_circle_24px"
-        android:title="Remove ads"/>
+
 
 </group>
 </menu>

@@ -1,43 +1,52 @@
 package com.maliotis.batterystate.Activities;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
-import android.widget.ImageView;
-import com.gelitenight.waveview.library.WaveView;
+import android.widget.TextView;
+
 import com.maliotis.batterystate.R;
+import com.timqi.sectorprogressview.ColorfulRingProgressView;
 
 import java.io.IOException;
 
+import static com.maliotis.batterystate.Activities.MainActivity.MY_PREFS_NAME;
+
 public class AlarmReceiverActivity extends AppCompatActivity {
 
-    public MediaPlayer mMediaPlayer;
-    ImageView mImageView;
-    WaveView mWaveView;
+    private MediaPlayer mMediaPlayer;
+    ColorfulRingProgressView progressView;
+    TextView textView;
+
     int level;
+
+    SharedPreferences prefs;
     UnpluggedCharge receiver = new UnpluggedCharge();
 
     public class UnpluggedCharge extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mMediaPlayer != null) {
-                if (mMediaPlayer.isPlaying()) {
-                    mMediaPlayer.stop();
-                    finish();
-                }
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                mMediaPlayer.stop();
+                finish();
             }
         }
     }
@@ -54,8 +63,10 @@ public class AlarmReceiverActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_alarm_receiver);
 
-        mImageView = findViewById(R.id.imageView);
-        mWaveView = findViewById(R.id.waveView);
+        progressView = findViewById(R.id.progressBarAlarm);
+        progressView.setPercent(0);
+
+        textView = findViewById(R.id.textViewAlarm);
 
         PowerManager pm = (PowerManager) this
                 .getSystemService(Context.POWER_SERVICE);
@@ -63,10 +74,11 @@ public class AlarmReceiverActivity extends AppCompatActivity {
                 PowerManager.FULL_WAKE_LOCK |
                         PowerManager.ACQUIRE_CAUSES_WAKEUP |
                 PowerManager.ON_AFTER_RELEASE, "") : null;
-        wl.acquire(60*1000L /*1 minute*/);
+        if (wl != null) {
+            wl.acquire(60*1000L /*1 minute*/);
+        }
 
         Button stopAlarm = findViewById(R.id.button);
-
 
         stopAlarm.setOnClickListener(view -> {
            mMediaPlayer.stop();
@@ -75,7 +87,9 @@ public class AlarmReceiverActivity extends AppCompatActivity {
         level = getIntent().getIntExtra("level",80);
 
 
-        playSound(this, getAlarmUri());
+        if (playSound(this, getAlarmUri())) {
+            animateProgressBar(level,1300);
+        }
 
 
     }
@@ -94,7 +108,7 @@ public class AlarmReceiverActivity extends AppCompatActivity {
         unregisterReceiver(receiver);
     }
 
-    private void playSound(Context context, Uri alert) {
+    private boolean playSound(Context context, Uri alert) {
         mMediaPlayer = new MediaPlayer();
         try {
             mMediaPlayer.setDataSource(context,alert);
@@ -104,27 +118,23 @@ public class AlarmReceiverActivity extends AppCompatActivity {
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 mMediaPlayer.prepare();
                 if (!mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.setLooping(true);
                     mMediaPlayer.start();
-
-                    mImageView.getBackground().setLevel(level*100);
-                    mWaveView.setShapeType(WaveView.ShapeType.SQUARE);
-                    mWaveView.setWaveColor(Color.CYAN,Color.GREEN);
-                    mWaveView.setWaterLevelRatio(20);
-                    mWaveView.setAmplitudeRatio(5);
-                    mWaveView.setWaveLengthRatio(5);
-                    mWaveView.setWaveShiftRatio(5);
-                    mWaveView.setShowWave(true);
+                    return true;
                 }
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.d(this.getLocalClassName(),e.getMessage());
         }
+
+        return false;
     }
 
     private Uri getAlarmUri() {
-        Uri alert = RingtoneManager
-                .getDefaultUri(RingtoneManager.TYPE_ALARM);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String ringtone = prefs.getString(SettingsActivity.RINGTONE,"");
+        Uri alert = Uri.parse(ringtone);
         if (alert == null) {
             alert = RingtoneManager
                     .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -132,7 +142,29 @@ public class AlarmReceiverActivity extends AppCompatActivity {
                 alert = RingtoneManager
                         .getDefaultUri(RingtoneManager.TYPE_RINGTONE);
             }
+        } else if (alert.toString().isEmpty()) {
+            alert = RingtoneManager
+                    .getDefaultUri(RingtoneManager.TYPE_ALARM);
         }
         return alert;
     }
+
+    private void animateProgressBar(int progress, int duration) {
+        ObjectAnimator anim = ObjectAnimator.ofFloat(progressView, "percent",
+                progressView.getPercent(), progress);
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setDuration(duration);
+        anim.start();
+        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                Log.d("Animator",valueAnimator.getAnimatedValue().toString());
+                int textValue = (int) Float.parseFloat(valueAnimator.getAnimatedValue().toString());
+                textView.setText(String.format("%d", textValue));
+            }
+        });
+    }
 }
+
+
+

@@ -12,21 +12,21 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.transition.Fade;
-import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.maliotis.batterystate.NumberPickerPreference;
 import com.maliotis.batterystate.R;
+import com.maliotis.batterystate.SeekBarPreference;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -43,6 +43,8 @@ import java.util.Objects;
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
     public static final String RINGTONE = "ringtone";
+    TextView textViewToolbar;
+    Toolbar toolbar;
 
     /**
      * A preference value change listener that updates the preference's summary
@@ -89,6 +91,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     }
                 }
 
+            } else if (preference instanceof NumberPickerPreference) {
+                preference.setSummary(stringValue+"Something");
+
+            } else if (preference instanceof SeekBarPreference){
+
+
+
             } else {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
@@ -131,22 +140,24 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                //WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //getFragmentManager().beginTransaction().replace(android.R.id.content, new GeneralPreferenceFragment()).commit();
+        setContentView(R.layout.acitivity_settings);
         setupActionBar();
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new GeneralPreferenceFragment()).commit();
+        addPreferencesFromResource(R.xml.pref_settings);
     }
 
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.
      */
     private void setupActionBar() {
-        /*getLayoutInflater().inflate(R.layout.toolbar, findViewById(android.R.id.content));
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        textViewToolbar = findViewById(R.id.textViewTitleToolbar);
+        textViewToolbar.setText("Settings");
+        toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
-        TextView textView = findViewById(R.id.textViewTitleToolbar);
-        textView.setText("Settings");
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);*/
-        getSupportActionBar();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     }
 
@@ -183,19 +194,33 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("ringtone"));
-            //bindPreferenceSummaryToValue(findPreference("pluginChargeSetting"));
+            bindPreferenceSummaryToValue(findPreference(RINGTONE));
         }
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             int id = item.getItemId();
             if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), MainActivity.class));
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                startActivity(intent);
                 return true;
             }
             return super.onOptionsItemSelected(item);
         }
     }
 
+    @Override
+    protected void onStop() {
+        textViewToolbar.setText("Alarm");
+        super.onStop();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
