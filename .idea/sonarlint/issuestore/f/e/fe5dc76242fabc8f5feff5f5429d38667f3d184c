@@ -1,0 +1,6 @@
+
+\squid:UselessImportCheck"3Remove this unused import 'android.view.ViewGroup'.(‹îá8‰‘Ë­â,
+lsquid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(ç¶¸şÿÿÿÿ8‰‘Ë­â,
+Fsquid:S00108")Either remove or fill this block of code.(ü—Ş°8‰‘Ë­â,
+wsquid:S00120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(«ÿÀ8‰‘Ë­â,
+asquid:UselessImportCheck"8Remove this unused import 'android.view.LayoutInflater'.(À¯ÑÇ8‰‘Ë­â,

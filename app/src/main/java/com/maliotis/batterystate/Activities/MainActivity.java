@@ -2,8 +2,6 @@ package com.maliotis.batterystate.Activities;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,35 +12,43 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BlurMaskFilter;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.BatteryManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.provider.FontsContract;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.EditText;
-import android.support.v7.widget.Toolbar;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.maliotis.batterystate.BatteryChanged;
+import android.widget.Toast;
+import java.awt.font.TextAttribute;
 import com.maliotis.batterystate.PluginCharge;
 import com.maliotis.batterystate.R;
 import com.timqi.sectorprogressview.ColorfulRingProgressView;
 
-import java.util.Calendar;
 import java.util.Objects;
 
 import butterknife.BindView;
@@ -74,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences.Editor editor;
     SharedPreferences prefs;
 
+
      BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -92,17 +99,9 @@ public class MainActivity extends AppCompatActivity {
 
 
             if (level == userLevel && isCharging) {
-
-                Calendar cal  = Calendar.getInstance();
-                cal.add(Calendar.MILLISECOND,500);
-                Intent i = new Intent(context, AlarmReceiverActivity.class);
-                i.putExtra("level",userLevel);
-                PendingIntent pendingIntent = PendingIntent.getActivities(context,
-                        12345,
-                        new Intent[]{i},
-                        PendingIntent.FLAG_CANCEL_CURRENT);
-                AlarmManager am = (AlarmManager) getSystemService(Activity.ALARM_SERVICE);
-                am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),pendingIntent);
+                Intent alarm = new Intent(context, AlarmReceiverActivity.class);
+                alarm.putExtra("level", userLevel);
+                context.startActivity(alarm);
             }
         }
     };
@@ -113,14 +112,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                //WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        checkPermissions();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            checkPermissions();
+        }
         ImageView imageView = new ImageView(this);
         imageView.setImageResource(R.drawable.drawer_icon);
 
         editor = getSharedPreferences(MY_PREFS_NAME,MODE_PRIVATE).edit();
+
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setMaskFilter(new BlurMaskFilter(20.0f, BlurMaskFilter.Blur.SOLID));
+        pb.setLayerType(View.LAYER_TYPE_SOFTWARE, paint);
+
 
         prefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         int restoredProgress = prefs.getInt(PROGRESS_PREF, 0);
@@ -135,19 +139,7 @@ public class MainActivity extends AppCompatActivity {
         //Showing notification show the app doesn't go to idle mode
         showNotification();
 
-        //TODO: Register the receiver and check from preferences if you should enable it or not
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean startReceiverBatteryChanged = p.getBoolean("Enable Alert",true);
-        if (startReceiverBatteryChanged) {
-            //Start the receiver
-            startTheReceiverBatteryChanged();
-        }
-
-        boolean startReceiverPluginCharge = p.getBoolean("Start Automatically", true);
-        if (startReceiverPluginCharge) {
-
-            startTheReceiverPluginCharge();
-        }
+        getSharedPrefsForApp();
 
         setSupportActionBar(mToolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
@@ -218,10 +210,13 @@ public class MainActivity extends AppCompatActivity {
                     Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
                     startActivity(intent);
                     break;
-                case R.id.nav_themes:
-                    //TODO navigate to themes Activity
+                case R.id.nav_how_to_use:
+                    //TODO show alert dialog on how to use
+                    showAlertOnHowToUse();
+                    break;
                 case R.id.nav_info:
                     //TODO show alert dialog with the info of the app
+
             }
             mDrawerLayout.closeDrawer(GravityCompat.START);
             return false;
@@ -229,15 +224,45 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    private void getSharedPrefsForApp() {
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean startReceiverBatteryChanged = p.getBoolean("Enable Alert",true);
+
+        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        if (startReceiverBatteryChanged) {
+
+            startTheReceiverBatteryChanged(mBatInfoReceiver, intentFilter);
+        } else {
+            stopTheReceiverBatteryChanged(mBatInfoReceiver);
+        }
+
+        boolean startReceiverPluginCharge = p.getBoolean("Start Automatically", true);
+        if (startReceiverPluginCharge) {
+
+            startTheReceiverPluginCharge();
+        } else {
+            stopTheReceiverPluginCharge();
+        }
+    }
+
+    private void stopTheReceiverPluginCharge() {
+        PackageManager pm = getPackageManager();
+        ComponentName compName =
+                new ComponentName(getApplicationContext(),
+                        PluginCharge.class);
+        pm.setComponentEnabledSetting(
+                compName,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
+    }
+
+
+    private void stopTheReceiverBatteryChanged(BroadcastReceiver changed) {
+        unregisterReceiver(changed);
+    }
+
     private void startTheReceiverPluginCharge() {
-//        PluginCharge charge = new PluginCharge();
-//        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_POWER_CONNECTED);
-//        try {
-//            unregisterReceiver(charge);
-//        } catch (Exception e) {
-//            e.getMessage();
-//        }
-//        registerReceiver(charge,intentFilter);
 
         PackageManager pm = getPackageManager();
         ComponentName compName =
@@ -249,24 +274,15 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.DONT_KILL_APP);
     }
 
-    private void startTheReceiverBatteryChanged() {
-        BatteryChanged changed = new BatteryChanged(tempValueTextView,voltValueTextView,prefs);
-        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    private void startTheReceiverBatteryChanged(BroadcastReceiver changed, IntentFilter intentFilter) {
+
         try {
             unregisterReceiver(changed);
         } catch (Exception e) {
-            e.getMessage();
+            e.printStackTrace();
+            Log.d("BatteryChanged: ", e.getMessage());
         }
         registerReceiver(changed,intentFilter);
-
-        PackageManager pm = getPackageManager();
-        ComponentName compName =
-                new ComponentName(getApplicationContext(),
-                        PluginCharge.class);
-        pm.setComponentEnabledSetting(
-                compName,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                PackageManager.DONT_KILL_APP);
 
     }
 
@@ -296,6 +312,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showAlertOnHowToUse() {
+        SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(mContext, SweetAlertDialog.BUTTON_CONFIRM);
+        sweetAlertDialog
+                .setTitle("How to use");
+        TextView t = new TextView(this);
+        t.setTypeface(null, Typeface.BOLD);
+        t.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        t.setText("Change Level\n" + "To change the level of the alarm touch the number inside the progressive circle.\n" + "<b> Access the Settings </b> \n" + "Press on the \"Drawer Button\" the striped button at the top left corner.Press Settings, and to exit press either the back button or the back arrow at the top left corner\n" + "<b> General </b>");
+        sweetAlertDialog.setContentView(t);
+//        sweetAlertDialog.setContentText("Change Level\n" +
+//                "To change the level of the alarm touch the number inside the progressive circle.\n" +
+//                "<b> Access the Settings </b> \n" +
+//                "Press on the \"Drawer Button\" the striped button at the top left corner." +
+//                "Press Settings, and to exit press either the back button or the back arrow at the top left corner\n" +
+//                "<b> General </b>");
+
+        sweetAlertDialog.setConfirmText("OK").show();
+    }
+
     private void animateProgressBar(int progress, int duration) {
         ObjectAnimator anim = ObjectAnimator.ofFloat(pb, "percent",
                 pb.getPercent(), progress);
@@ -304,14 +339,30 @@ public class MainActivity extends AppCompatActivity {
         anim.start();
     }
 
-    private void checkPermissions() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WAKE_LOCK)
-                != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WAKE_LOCK},
-                    2);
+    private void checkPermissions() {
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        assert pm != null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS},
+                        100);
+            } else {
+                Toast.makeText(this,"Power is not optimized",Toast.LENGTH_LONG).show();
+            }
+
+            Intent intent = new Intent();
+            String packageName = this.getPackageName();
+            PowerManager pm1 = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+            if (pm1.isIgnoringBatteryOptimizations(packageName))
+                intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            else {
+                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                intent.setData(Uri.parse("package:" + packageName));
+            }
+            this.startActivity(intent);
+            startActivityForResult(intent,12);
         }
     }
 

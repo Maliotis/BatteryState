@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:example="http://schemas.android.com/apk/res/com.mnm.seekbarpreference"
-    xmlns:settings="http://schemas.android.com/apk/res/com.android.settings">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="Alarm">
+        android:title="@string/alarm">
 
         <RingtonePreference
             android:key="ringtone"
             android:defaultValue="content://settings/system/alarm_alert"
             android:ringtoneType="alarm"
             android:summary="Default"
-            android:title="Select a ringtone"/>
+            android:title="@string/select_ringtone"/>
 
         <com.maliotis.batterystate.SeekBarPreference
             android:key="volume"
+            android:summary="Adjust the volume of the alarm"
             android:defaultValue="60">
 
         </com.maliotis.batterystate.SeekBarPreference>
@@ -24,21 +23,23 @@
         android:title="Other">
 
         <SwitchPreference
-            android:title="Start Automatically"
-            android:key="pluginChargeSetting"
+            android:title="@string/start_automatically"
+            android:key="Start Automatically"
             android:defaultValue="true"
             android:summary="When you plug in your phone the app will be shown automatically"/>
 
         <SwitchPreference
-            android:title="Enable Alarm"
+            android:title="@string/enable_alarm"
             android:key="Enable Alert"
             android:defaultValue="true"
             android:summary="The alarm will enabled and run if the app is closed"/>
 
         <com.maliotis.batterystate.NumberPickerPreference
             android:defaultValue="20"
-            android:title="Low Battery"
+            android:title="@string/low_battery"
             android:key="low_battery">
+
+
 
         </com.maliotis.batterystate.NumberPickerPreference>
 

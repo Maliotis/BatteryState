@@ -4,6 +4,7 @@
           package="com.maliotis.batterystate">
 
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -11,13 +12,15 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
-
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:icon,android:theme">
-        <activity android:name=".Activities.MainActivity"
-                  android:screenOrientation="portrait">
+        <activity
+            android:name=".Activities.MainActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -26,6 +29,9 @@
         </activity>
         <activity
             android:name=".Activities.AlarmReceiverActivity"
+            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:showOnLockScreen="true">
         </activity>
@@ -36,16 +42,12 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".BatteryChanged">
-            <intent-filter>
-                <action android:name="android.intent.action.BATTERY_CHANGED"/>
-            </intent-filter>
-        </receiver>
-
         <activity
             android:name=".Activities.SettingsActivity"
-            android:screenOrientation="portrait"
-            android:label="@string/title_activity_settings">
+            android:label="@string/title_activity_settings"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".Activities.SetActivity">
         </activity>
     </application>
 

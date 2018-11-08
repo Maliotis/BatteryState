@@ -1,7 +1,6 @@
 package com.maliotis.batterystate.Activities;
 
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,23 +10,19 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
-
 import com.maliotis.batterystate.R;
 import com.timqi.sectorprogressview.ColorfulRingProgressView;
-
 import java.io.IOException;
-
-import static com.maliotis.batterystate.Activities.MainActivity.MY_PREFS_NAME;
 
 public class AlarmReceiverActivity extends AppCompatActivity {
 
@@ -73,7 +68,7 @@ public class AlarmReceiverActivity extends AppCompatActivity {
         PowerManager.WakeLock wl = pm != null ? pm.newWakeLock(
                 PowerManager.FULL_WAKE_LOCK |
                         PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                PowerManager.ON_AFTER_RELEASE, "") : null;
+                PowerManager.ON_AFTER_RELEASE, "batterstate:mywakeLock") : null;
         if (wl != null) {
             wl.acquire(60*1000L /*1 minute*/);
         }
@@ -82,7 +77,8 @@ public class AlarmReceiverActivity extends AppCompatActivity {
 
         stopAlarm.setOnClickListener(view -> {
            mMediaPlayer.stop();
-           finish();
+           //finish();
+           this.onBackPressed();
         });
         level = getIntent().getIntExtra("level",80);
 
@@ -137,11 +133,8 @@ public class AlarmReceiverActivity extends AppCompatActivity {
         Uri alert = Uri.parse(ringtone);
         if (alert == null) {
             alert = RingtoneManager
-                    .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            if (alert == null) {
-                alert = RingtoneManager
-                        .getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-            }
+                    .getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+
         } else if (alert.toString().isEmpty()) {
             alert = RingtoneManager
                     .getDefaultUri(RingtoneManager.TYPE_ALARM);
@@ -155,15 +148,13 @@ public class AlarmReceiverActivity extends AppCompatActivity {
         anim.setInterpolator(new LinearInterpolator());
         anim.setDuration(duration);
         anim.start();
-        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                Log.d("Animator",valueAnimator.getAnimatedValue().toString());
-                int textValue = (int) Float.parseFloat(valueAnimator.getAnimatedValue().toString());
-                textView.setText(String.format("%d", textValue));
-            }
+        anim.addUpdateListener(valueAnimator -> {
+            Log.d("Animator",valueAnimator.getAnimatedValue().toString());
+            int textValue = (int) Float.parseFloat(valueAnimator.getAnimatedValue().toString());
+            textView.setText(String.format("%d", textValue));
         });
     }
+
 }
 
 

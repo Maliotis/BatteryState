@@ -6,16 +6,16 @@
     <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/ic_round_settings_24px"
-        android:title="Settings"/>
+        android:title="@string/settings"/>
     <item
-        android:id="@+id/nav_themes"
+        android:id="@+id/nav_how_to_use"
         android:icon="@drawable/ic_baseline_help_24px"
-        android:title="How to use"/>
+        android:title="@string/how_to_use"/>
 
     <item
         android:id="@+id/nav_info"
         android:icon="@drawable/ic_baseline_info_24px"
-        android:title="About"/>
+        android:title="@string/about"/>
 
 
 

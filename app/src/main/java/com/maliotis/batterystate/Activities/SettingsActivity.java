@@ -153,7 +153,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     private void setupActionBar() {
         textViewToolbar = findViewById(R.id.textViewTitleToolbar);
-        textViewToolbar.setText("Settings");
+        textViewToolbar.setText(R.string.settings);
         toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
@@ -211,7 +211,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     @Override
     protected void onStop() {
-        textViewToolbar.setText("Alarm");
+        textViewToolbar.setText(R.string.alarm);
         super.onStop();
     }
 

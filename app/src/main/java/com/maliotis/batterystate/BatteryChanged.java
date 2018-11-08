@@ -27,29 +27,32 @@ public class BatteryChanged extends BroadcastReceiver {
     TextView voltValueTextView;
     SharedPreferences prefs;
 
-
-    public BatteryChanged(TextView tempValueTextView,TextView voltValueTextView,SharedPreferences prefs) {
-        this.tempValueTextView = tempValueTextView;
-        this.voltValueTextView = voltValueTextView;
-        this.prefs = prefs;
-    }
-
-
-    public BatteryChanged(){}
+    Context context;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL,-1);
-        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS,-1);
+        Log.d("BatteryChanged","Works");
+        this.context = context;
+        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
         boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING;
-        float temp = (float) intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,0) / 10;
-        float volt = (float) intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE,0) / 1000;
-        Log.d("TemperatureMain", "onReceive: "+ temp);
-        Log.d("VoltMain","onReceive: " + volt);
-        tempValueTextView.setText(String.valueOf(temp).concat(" ").concat((char) 0x00B0 +"C"));
-        voltValueTextView.setText(String.valueOf(volt).concat("V"));
+
+        try {
+
+            float temp = (float) intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) / 10;
+            float volt = (float) intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0) / 1000;
+            Log.d("TemperatureMain", "onReceive: " + temp);
+            Log.d("VoltMain", "onReceive: " + volt);
+            tempValueTextView.setText(String.valueOf(temp).concat(" ").concat((char) 0x00B0 + "C"));
+            voltValueTextView.setText(String.valueOf(volt).concat("V"));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
         int low_level = settings.getInt("low_battery",20);
+
 
         int userLevel;
         userLevel = prefs.getInt(PROGRESS_PREF,80);
@@ -86,5 +89,10 @@ public class BatteryChanged extends BroadcastReceiver {
 
             notificationManager.notify(1,notification);
         }
+    }
+
+
+    private boolean appIsNotRunning() {
+        return !Helper.isAppRunning(context);
     }
 }

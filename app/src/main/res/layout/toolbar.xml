@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Alarm"
+        android:text="@string/alarm"
         android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
         />
 

@@ -9,7 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.SeekBar;
 
-public class SeekBarPreference extends DialogPreference implements SeekBar.OnSeekBarChangeListener {
+public class SeekBarPreference extends Preference implements SeekBar.OnSeekBarChangeListener {
 
 
     private SeekBar mSeekBar;
@@ -77,6 +77,8 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
             callChangeListener(value);
         }
     }
+
+
 
     @Override
     protected Object onGetDefaultValue(TypedArray a, int index) {
